@@ -5,10 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BotCommands {
@@ -30,22 +27,18 @@ public class BotCommands {
 
     public String[] getRandomPolishWords(String correctWord) {
         Random random = new Random();
-        int numberOfOptions = 3;
-        String[] finalWords = new String[numberOfOptions];
+        Set<String> options = new HashSet<>();
         List<String> polishWords = data.getPolishWords();
         int listSize = polishWords.size();
-        String lastWord = "";
 
-        for(int i = 0; i < finalWords.length;) {
-            String randomWord = polishWords.get(random.nextInt(listSize));
-            if(!lastWord.equals(randomWord) && !correctWord.equals(randomWord)) {
-                finalWords[i] = randomWord;
-                lastWord = randomWord;
-                i++;
+        while(options.size() < 3){
+            String word = polishWords.get(random.nextInt(listSize));
+            if(!word.equals(correctWord)){
+                options.add(word);
             }
         }
 
-        return finalWords;
+        return options.toArray(new String[3]);
     }
 
     public SendMessage sendCustomKeyboard(String chatId, String[] incorrectWords, String correctWord) {

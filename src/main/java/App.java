@@ -2,7 +2,6 @@ import functionality.Bot;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import utility.TokenEncryption;
-
 import java.util.Base64;
 
 public class App {

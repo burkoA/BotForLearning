@@ -30,6 +30,10 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
             try {
                 if(text.startsWith("/quizua")) {
+                    if (userQuestions.containsKey(chatId)) {
+                        telegramClient.execute(new SendMessage(chatId, "Your previous quiz was canceled. Starting a new one."));
+                        userQuestions.remove(chatId);
+                    }
                     int numQuestions = NUMBER_OF_QUESTIONS;
                     String[] parts = text.split(" ");
                     if(parts.length > 1) {
