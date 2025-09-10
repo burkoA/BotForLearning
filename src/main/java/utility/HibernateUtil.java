@@ -1,6 +1,6 @@
 package utility;
 
-import model.Dictionary;
+import model.BotDictionary;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -11,7 +11,7 @@ public class HibernateUtil {
         try {
             return new Configuration()
                     .configure("hibernate.cfg.xml")
-                    .addAnnotatedClass(Dictionary.class)
+                    .addAnnotatedClass(BotDictionary.class)
                     .buildSessionFactory();
         } catch (Throwable ex) {
             throw new ExceptionInInitializerError("SessionFactory creation failed: " + ex);

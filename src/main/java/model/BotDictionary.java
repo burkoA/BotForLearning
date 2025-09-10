@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "dictionary")
-public class Dictionary {
+public class BotDictionary {
     @Id
     private Long id;
 
@@ -14,9 +14,9 @@ public class Dictionary {
     @Column(nullable = false)
     private String ukrainianWord;
 
-    public Dictionary() {};
+    public BotDictionary() {};
 
-    public Dictionary(String polishWord, String ukrainianWord) {
+    public BotDictionary(String polishWord, String ukrainianWord) {
         this.polishWord = polishWord;
         this.ukrainianWord = ukrainianWord;
     }
