@@ -41,6 +41,22 @@ public class BotCommands {
         return options.toArray(new String[3]);
     }
 
+    public String[] getRandomUkrainianWord(String correctWord) {
+        Random random = new Random();
+        Set<String> options = new HashSet<>();
+        List<String> ukrainianWord = data.getUkrainianWords();
+        int listSize = ukrainianWord.size();
+
+        while(options.size() < 3){
+            String word = ukrainianWord.get(random.nextInt(listSize));
+            if(!word.equals(correctWord)){
+                options.add(word);
+            }
+        }
+
+        return options.toArray(new String[3]);
+    }
+
     public SendMessage sendCustomKeyboard(String chatId, String[] incorrectWords, String correctWord) {
         Random random = new Random();
         List<String> totalWords = Arrays.stream(incorrectWords).collect(Collectors.toList());
@@ -76,6 +92,11 @@ public class BotCommands {
         message.setReplyMarkup(keyboardMarkup);
 
         return message;
+    }
+
+    public String startMessage() {
+        return "Hello! I'm bot for helping you learn polish and ukrainian language! \n"
+                + "I will create for you small quiz and if you are don't know something I will write correct answer for you!";
     }
 
     public String helpCommand() {

@@ -8,8 +8,8 @@ public class App {
     public static void main(String[] args) {
         try {
             String botToken = new String(Base64.getDecoder().decode(TokenEncryption.BOT_TOKEN));
-            TelegramBotsLongPollingApplication t = new TelegramBotsLongPollingApplication();
-            t.registerBot(botToken, new Bot());
+            TelegramBotsLongPollingApplication telegramBotsLongPollingApplication = new TelegramBotsLongPollingApplication();
+            telegramBotsLongPollingApplication.registerBot(botToken, new Bot());
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

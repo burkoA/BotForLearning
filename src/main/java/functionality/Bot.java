@@ -19,7 +19,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     private final Map<String, Integer> userQuestionIndex = new HashMap<>();
     private final Map<String, Integer> userScore = new HashMap<>();
     private final Map<String, List<BotDictionary>> userQuestions = new HashMap<>();
-
+    private final Map<String, String> quizVersion = new HashMap<>();
 
     @Override
     public void consume(Update update) {
@@ -29,12 +29,31 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
             String text = update.getMessage().getText();
 
             try {
-                if(text.startsWith("/quizua")) {
+                if(text.startsWith("/start")) {
+                    telegramClient.execute(new SendMessage(chatId, botCommands.startMessage()));
+                } else if(text.startsWith("/quizua")) {
                     if (userQuestions.containsKey(chatId)) {
                         telegramClient.execute(new SendMessage(chatId, "Your previous quiz was canceled. Starting a new one."));
-                        userQuestions.remove(chatId);
+                        clearPreviousQuiz(chatId);
                     }
                     int numQuestions = NUMBER_OF_QUESTIONS;
+                    quizVersion.put(chatId,"ua");
+                    String[] parts = text.split(" ");
+                    if(parts.length > 1) {
+                        try {
+                            numQuestions = Integer.parseInt(parts[1]);
+                        } catch (NumberFormatException e) {
+                            telegramClient.execute(new SendMessage(chatId, "Second argument must be a number!"));
+                        };
+                    }
+                    startQuiz(chatId, numQuestions);
+                } else if(text.equals("/quizpl")) {
+                    if (userQuestions.containsKey(chatId)) {
+                        telegramClient.execute(new SendMessage(chatId, "Your previous quiz was canceled. Starting a new one."));
+                        clearPreviousQuiz(chatId);
+                    }
+                    int numQuestions = NUMBER_OF_QUESTIONS;
+                    quizVersion.put(chatId,"pl");
                     String[] parts = text.split(" ");
                     if(parts.length > 1) {
                         try {
@@ -58,6 +77,13 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
         }
     }
 
+    private void clearPreviousQuiz(String chatId) {
+        userQuestions.remove(chatId);
+        userScore.remove(chatId);
+        userQuestionIndex.remove(chatId);
+        quizVersion.remove(chatId);
+    }
+
     private void startQuiz(String chatId, int numQuestions) throws TelegramApiException {
         List<BotDictionary> allWords = botCommands.getAllWords();
         Collections.shuffle(allWords);
@@ -68,10 +94,10 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
         userQuestionIndex.put(chatId,0);
         userScore.put(chatId,0);
 
-        sendQuestion(chatId);
+        sendQuestion(chatId, quizVersion.get(chatId));
     }
 
-    private void sendQuestion(String chatId) throws TelegramApiException {
+    private void sendQuestion(String chatId, String quizOption) throws TelegramApiException {
         int index = userQuestionIndex.get(chatId);
         List<BotDictionary> quizWords = userQuestions.get(chatId);
 
@@ -81,35 +107,51 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
             userQuestions.remove(chatId);
             userQuestionIndex.remove(chatId);
             userScore.remove(chatId);
+            quizVersion.remove(chatId);
             return;
         }
 
         BotDictionary question = quizWords.get(index);
+        String[] incorrect;
 
-        String[] incorrect = botCommands.getRandomPolishWords(userQuestions
-                .get(chatId)
-                .get(userQuestionIndex.get(chatId))
-                .getPolishWord());
+        if(quizOption.equals("ua")) {
+            incorrect = botCommands.getRandomPolishWords(userQuestions
+                    .get(chatId)
+                    .get(userQuestionIndex.get(chatId))
+                    .getPolishWord());
+        } else {
+            incorrect = botCommands.getRandomUkrainianWord(userQuestions
+                    .get(chatId)
+                    .get(userQuestionIndex.get(chatId))
+                    .getUkrainianWord());
+        }
 
-        telegramClient.execute(new SendMessage(chatId, "How you gonna translate it - " + question.getUkrainianWord() + " ?"));
-        System.out.println(question.getUkrainianWord());
-        telegramClient.execute(botCommands.sendCustomKeyboard(chatId,incorrect, question.getPolishWord()));
+        String translatedWord = quizOption.equals("ua") ? question.getUkrainianWord() : question.getPolishWord();
+        String correctWord = quizOption.equals("ua") ? question.getPolishWord() : question.getUkrainianWord();
+
+        telegramClient.execute(new SendMessage(chatId, "How you gonna translate it - " +  translatedWord + " ?"));
+        System.out.println(correctWord);
+        telegramClient.execute(botCommands.sendCustomKeyboard(chatId,incorrect, correctWord));
     }
 
     private void handleAnswer(String chatId, String answer) throws TelegramApiException {
         int index = userQuestionIndex.get(chatId);
         List<BotDictionary> quizWords = userQuestions.get(chatId);
         BotDictionary current = quizWords.get(index);
+        String correctAnswer = quizVersion.get(chatId).equals("ua") ? current.getPolishWord() : current.getUkrainianWord();
 
-        if (answer.equals(current.getPolishWord())) {
+        if (answer.equals(correctAnswer)) {
             telegramClient.execute(new SendMessage(chatId, "Correct!"));
             userScore.put(chatId, userScore.get(chatId) + 1);
         } else {
-            telegramClient.execute(new SendMessage(chatId, "Wrong! Correct answer was: " + current.getPolishWord()));
+            telegramClient.execute(new SendMessage(chatId, "Wrong! Correct answer was: " + correctAnswer));
         }
 
-        // Move to next question
         userQuestionIndex.put(chatId, index + 1);
-        sendQuestion(chatId);
+        sendQuestion(chatId,quizVersion.get(chatId));
+    }
+
+    public void sendSticker(String chatId, int result) {
+
     }
 }
