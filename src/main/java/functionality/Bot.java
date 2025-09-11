@@ -4,6 +4,8 @@ import model.BotDictionary;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -15,6 +17,11 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient = new OkHttpTelegramClient(new String(Base64.getDecoder().decode(TokenEncryption.BOT_TOKEN)));
     private final BotCommands botCommands = new BotCommands();
     private static final int NUMBER_OF_QUESTIONS = 12;
+    private final List<String> stickersId = List.of("CAACAgIAAxkBAAEPWY1owpx24wQPu9FDxHw1CLb_N3KSrQACrgIAAjZ2IA54Lv6p2p7e4zYE",
+            "CAACAgIAAxkBAAEPWYlowpxklUSUkykssC8aaHvakltLxwACuQIAAjZ2IA7tdOsFZ9JbhTYE",
+            "CAACAgIAAxkBAAEPWZFowpygw1qDa-vOi9jRy8T45LJnigACsAIAAjZ2IA7iZ3TN1yUsCTYE",
+            "CAACAgIAAxkBAAEPWY9owpyU7b4Rvhy2nDNrzIzY5mAXmQACsQIAAjZ2IA7Lb6f2ctrJ_TYE",
+            "CAACAgIAAxkBAAEPWYtowpxwm2Lo_7Cip_4NNr28CLReZwACrwIAAjZ2IA5y5gpS9w5GKzYE");
 
     private final Map<String, Integer> userQuestionIndex = new HashMap<>();
     private final Map<String, Integer> userScore = new HashMap<>();
@@ -104,6 +111,8 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
         if(index >= quizWords.size()) {
             int score = userScore.get(chatId);
             telegramClient.execute(new SendMessage(chatId, "Quiz finished! Your score: " + score + "/" + quizWords.size()));
+            int percentage = (score / quizWords.size()) * 100;
+            sendSticker(chatId,percentage);
             userQuestions.remove(chatId);
             userQuestionIndex.remove(chatId);
             userScore.remove(chatId);
@@ -151,7 +160,27 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
         sendQuestion(chatId,quizVersion.get(chatId));
     }
 
-    public void sendSticker(String chatId, int result) {
+    public void sendSticker(String chatId, int result) throws TelegramApiException {
+        InputFile stickerFile;
+        SendSticker sticker;
 
+        if(result >= 80) {
+            stickerFile = new InputFile(stickersId.get(0));
+            sticker = new SendSticker(chatId, stickerFile);
+        } else if (result >= 60) {
+            stickerFile = new InputFile(stickersId.get(1));
+            sticker = new SendSticker(chatId, stickerFile);
+        } else if (result >= 40) {
+            stickerFile = new InputFile(stickersId.get(2));
+            sticker = new SendSticker(chatId, stickerFile);
+        } else if (result >= 20) {
+            stickerFile = new InputFile(stickersId.get(3));
+            sticker = new SendSticker(chatId, stickerFile);
+        } else {
+            stickerFile = new InputFile(stickersId.get(4));
+            sticker = new SendSticker(chatId, stickerFile);
+        }
+
+        telegramClient.execute(sticker);
     }
 }
