@@ -73,7 +73,6 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
                 } else if(text.equals("/help")) {
                     telegramClient.execute(new SendMessage(chatId,botCommands.helpCommand()));
                 } else if(userQuestions.containsKey(chatId)){
-                    System.out.println(text);
                     handleAnswer(chatId,text);
                 } else {
                     telegramClient.execute(new SendMessage(chatId,"Wrong command! :("));
@@ -111,7 +110,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
         if(index >= quizWords.size()) {
             int score = userScore.get(chatId);
             telegramClient.execute(new SendMessage(chatId, "Quiz finished! Your score: " + score + "/" + quizWords.size()));
-            int percentage = (score / quizWords.size()) * 100;
+            int percentage = (int) (((double) score / quizWords.size()) * 100);
             sendSticker(chatId,percentage);
             userQuestions.remove(chatId);
             userQuestionIndex.remove(chatId);
@@ -139,7 +138,6 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
         String correctWord = quizOption.equals("ua") ? question.getPolishWord() : question.getUkrainianWord();
 
         telegramClient.execute(new SendMessage(chatId, "How you gonna translate it - " +  translatedWord + " ?"));
-        System.out.println(correctWord);
         telegramClient.execute(botCommands.sendCustomKeyboard(chatId,incorrect, correctWord));
     }
 

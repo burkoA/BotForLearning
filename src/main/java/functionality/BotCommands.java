@@ -58,36 +58,20 @@ public class BotCommands {
     }
 
     public SendMessage sendCustomKeyboard(String chatId, String[] incorrectWords, String correctWord) {
-        Random random = new Random();
         List<String> totalWords = Arrays.stream(incorrectWords).collect(Collectors.toList());
         totalWords.add(correctWord);
-        int randomValue = 0;
 
         SendMessage message = new SendMessage(chatId,"Choose the correct answer:");
 
+        Collections.shuffle(totalWords);
         List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        
-        randomValue = random.nextInt(totalWords.size());
-        row.add(totalWords.get(randomValue));
-        totalWords.remove(randomValue);
-        
-        randomValue = random.nextInt(totalWords.size());
-        row.add(totalWords.get(randomValue));
-        totalWords.remove(randomValue);
+        for (int i = 0; i < totalWords.size(); i += 2) {
+            KeyboardRow row = new KeyboardRow();
+            row.add(totalWords.get(i));
+            if (i + 1 < totalWords.size()) row.add(totalWords.get(i + 1));
+            keyboard.add(row);
+        }
 
-        keyboard.add(row);
-        
-        row = new KeyboardRow();
-
-        randomValue = random.nextInt(totalWords.size());
-        row.add(totalWords.get(randomValue));
-        totalWords.remove(randomValue);
-
-        randomValue = random.nextInt(totalWords.size());
-        row.add(totalWords.get(randomValue));
-
-        keyboard.add(row);
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(keyboard);
         message.setReplyMarkup(keyboardMarkup);
 
