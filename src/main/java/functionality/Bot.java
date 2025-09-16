@@ -54,7 +54,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
                         };
                     }
                     startQuiz(chatId, numQuestions);
-                } else if(text.equals("/quizpl")) {
+                } else if(text.startsWith("/quizpl")) {
                     if (userQuestions.containsKey(chatId)) {
                         telegramClient.execute(new SendMessage(chatId, "Your previous quiz was canceled. Starting a new one."));
                         clearPreviousQuiz(chatId);
